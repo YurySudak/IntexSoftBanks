@@ -1,0 +1,35 @@
+CREATE TABLE IF NOT EXISTS bank (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    commission_individual DECIMAL(5,2) NOT NULL,
+    commission_legal DECIMAL(5,2) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS client (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    type VARCHAR(20) NOT NULL,
+    name VARCHAR(255) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS account (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    number VARCHAR(20) NOT NULL UNIQUE,
+    client_id BIGINT NOT NULL,
+    bank_id BIGINT NOT NULL,
+    currency VARCHAR(3) NOT NULL,
+    balance DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+    FOREIGN KEY (client_id) REFERENCES client(id),
+    FOREIGN KEY (bank_id) REFERENCES bank(id)
+);
+
+CREATE TABLE IF NOT EXISTS transaction (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    from_account_id BIGINT NOT NULL,
+    to_account_id BIGINT NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    currency VARCHAR(3) NOT NULL,
+    commission DECIMAL(15,2) NOT NULL,
+    timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (from_account_id) REFERENCES account(id),
+    FOREIGN KEY (to_account_id) REFERENCES account(id)
+);
