@@ -1,6 +1,8 @@
 package sudak;
 
 import sudak.command.Command;
+
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -66,8 +68,8 @@ class HelpCommand implements Command {
     @Override
     public void execute(String[] params) {
         System.out.println("Available commands:");
-        for (Command cmd : commandMap.values()) {
-            System.out.printf("%s - %s%n", cmd.getName(), cmd.getDescription());
-        }
+        commandMap.values().stream()
+                .sorted(Comparator.comparing(Command::getName))
+                .forEach(c -> System.out.printf("%s - %s%n", c.getName(), c.getDescription()));
     }
 }

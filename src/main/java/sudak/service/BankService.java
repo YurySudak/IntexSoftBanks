@@ -6,37 +6,32 @@ import sudak.repository.BankRepository;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class BankService implements Service<Bank, Long> {
+public class BankService implements Service {
     private final BankRepository bankRepository;
 
     public BankService(BankRepository bankRepository) {
         this.bankRepository = bankRepository;
     }
 
-    @Override
     public Bank create(Bank bank) {
         validateBank(bank);
         validateNewBank(bank);
         return bankRepository.save(bank);
     }
 
-    @Override
     public void update(Bank bank) {
         validateBank(bank);
         bankRepository.update(bank);
     }
 
-    @Override
     public Bank getById(Long id) {
         return bankRepository.findById(id).orElseThrow();
     }
 
-    @Override
     public List<Bank> getAll() {
         return bankRepository.findAll();
     }
 
-    @Override
     public void delete(Long id) {
         bankRepository.delete(id);
     }

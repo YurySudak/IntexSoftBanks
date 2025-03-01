@@ -9,35 +9,30 @@ import sudak.repository.ClientRepository;
 import java.util.List;
 
 @AllArgsConstructor
-public class ClientService implements Service<Client, Long> {
+public class ClientService implements Service {
 
     private final ClientRepository clientRepository;
     private final BankRepository bankRepository;
 
-    @Override
     public Client create(Client client) {
         validateClient(client);
         validateNewClient(client);
         return clientRepository.save(client);
     }
 
-    @Override
     public void update(Client client) {
         validateClient(client);
         clientRepository.update(client);
     }
 
-    @Override
     public Client getById(Long id) {
         return clientRepository.findById(id).orElseThrow();
     }
 
-    @Override
     public List<Client> getAll() {
         return clientRepository.findAll();
     }
 
-    @Override
     public void delete(Long id) {
         clientRepository.delete(id);
     }

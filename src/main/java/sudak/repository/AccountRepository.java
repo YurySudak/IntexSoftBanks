@@ -3,10 +3,13 @@ package sudak.repository;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import sudak.model.Account;
+import sudak.model.Transaction;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -111,5 +114,56 @@ public class AccountRepository implements Repository<Account, Long> {
                 ));
             }
         return Optional.empty();
+    }
+
+    @SneakyThrows
+    public void transfer(Account fromAccount, Account toAccount, Transaction transaction) {
+        connection.setAutoCommit(false);
+        try {
+            update(fromAccount);
+            update(toAccount);
+            saveTransaction(transaction);
+            connection.commit();
+        } catch (Exception e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(true);
+        }
+    }
+
+    @SneakyThrows
+    private void saveTransaction(Transaction transaction) {
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "INSERT INTO transaction (from_account_id, to_account_id, amount, currency, commission, timestamp) VALUES (?, ?, ?, ?, ?, ?)");
+        preparedStatement.setLong(1, transaction.getFromAccountId());
+        preparedStatement.setLong(2, transaction.getToAccountId());
+        preparedStatement.setBigDecimal(3, transaction.getAmount());
+        preparedStatement.setString(4, transaction.getCurrency());
+        preparedStatement.setBigDecimal(5, transaction.getCommission());
+        preparedStatement.setTimestamp(6, java.sql.Timestamp.valueOf(transaction.getTimestamp()));
+        preparedStatement.executeUpdate();
+    }
+
+    @SneakyThrows
+    public List<Transaction> findTransactions(long accountId) {
+        List<Transaction> transactions = new ArrayList<>();
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "SELECT * FROM transaction WHERE from_account_id = ? OR to_account_id = ?");
+        preparedStatement.setLong(1, accountId);
+        preparedStatement.setLong(2, accountId);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        while (resultSet.next()) {
+            transactions.add(new Transaction(
+                    resultSet.getLong("id"),
+                    resultSet.getLong("from_account_id"),
+                    resultSet.getLong("to_account_id"),
+                    resultSet.getBigDecimal("amount"),
+                    resultSet.getString("currency"),
+                    resultSet.getBigDecimal("commission"),
+                    resultSet.getTimestamp("timestamp").toLocalDateTime()
+            ));
+        }
+        return transactions;
     }
 }
